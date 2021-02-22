@@ -1,0 +1,1 @@
+add_library(helpmaker help.cpp help.h)
