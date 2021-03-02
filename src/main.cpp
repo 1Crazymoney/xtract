@@ -1,69 +1,74 @@
 #include "../lib/demonic/demonic.h"
 #include <getopt.h>
 
-using namespace std;
-using namespace demonic;
 
-void help() {
-    HelpMaker h;
-    h.add_usage("xtract -f FILE -w FILE");
-    h.add_option("f", "The file to extract from");
-    h.add_option("w", "The file to write to");
-    h.make();
+std::vector<std::string> dict = demonic::vector_from_file("english.txt");
+std::vector<std::string> temp;
+int min_chars = 6;
+int write_rate = 1000;
+
+void extract(std::string &s) {
+    for (const std::string &word : dict) {
+        if (demonic::string_in_string(word, s) && word.length() >= min_chars) {
+            std::cout << word << std::endl;
+            temp.push_back(word);
+            s.replace(s.find(word), word.length(), "");
+            extract(s);
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {
 
-    if (argc < 2 || argv[1] == "-h" || argv[1] == "--help") {
-        help();
+    if (argc < 5 || argv[1] == "-h" || argv[1] == "--help") {
+        HelpMaker h;
+        h.add_usage("xtract -p FILE -o FILE");
+        h.add_option("-h", "Prints help");
+        h.add_option("-p", "Define password file");
+        h.add_option("-o", "Define output file");
+        h.add_option("-w", "Define write rate");
+        h.make();
         return 0;
     }
 
     int option;
-    bool flag;
-    string file_in;
-    string file_out;
-    while ((option = getopt(argc, argv, "f:w:")) != -1) {
+    std::string file_in;
+    std::string file_out;
+
+    while ((option = getopt(argc, argv, "p:o:m:w:")) != -1) {
         switch (option) {
-            case 'f':
+            case 'p':
                 file_in = optarg;
                 break;
-            case 'w':
+            case 'o':
                 file_out = optarg;
                 break;
-            default:
-                help();
+            case 'm':
+                min_chars = atoi(optarg);
+                break;
+            case 'w':
+                write_rate = atoi(optarg);
                 break;
         }
     }
 
-    vector<string> english = vector_from_file("english.txt");
-    vector<string> temp;
-    ifstream stream_in(file_in);
-    ofstream stream_out(file_out, ios::app);
-    string s;
+    std::ofstream stream_out(file_out, std::ios::app);
 
-    while (stream_in >> s) {
-        for (const string &word : english) {
-            if (string_in_string(word, string_lower(s)) && word.length() > 3) {
-                cout << word << endl;
-                temp.push_back(word);
-                if (temp.size() >= 10000) {
-                    for (const string &t : temp) {
-                        stream_out << t << endl;
-                    }
-                    temp.clear();
-                }
-                continue;
+    std::vector<std::string> passwords = demonic::vector_from_file(file_in);
+    for (std::string password : passwords) {
+        extract(password);
+        if (temp.size() > write_rate) {
+            for (const std::string &s : temp) {
+                stream_out << s << std::endl;
             }
+            temp.clear();
         }
     }
 
-    for (const string &t : temp) {
-        stream_out << t << endl;
+    for (const std::string &s : temp) {
+        stream_out << s << std::endl;
     }
 
-    stream_in.close();
     stream_out.close();
 
     return 0;

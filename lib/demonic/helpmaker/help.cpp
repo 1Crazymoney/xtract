@@ -26,7 +26,7 @@ void HelpMaker::make() {
     if (!options.empty()) {
         std::cout << "Options:" << std::endl;
         for (const auto &a : options)
-            std::cout << demonic::string_space((std::string) a.option, 20) << a.info;
+            std::cout << demonic::string_space((std::string) a.option, 20) << a.info << std::endl;
 
     }
     std::cout << std::endl;
