@@ -1,3 +1,5 @@
-# xtract
-With Xtract you can extract English words from passwords. 
-With these words you can create your own word lists by combining them with other words or numbers and symbols.
+# Xtract
+*By Demonic-Coder*
+
+xtract is a program that extracts word lists from password lists. 
+You can then use these lists to crack passwords, for example with hashcat.
